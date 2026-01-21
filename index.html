@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NOWログ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            background-color: #fcfcfc;
+        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .diary-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 50;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .diary-modal.active { display: flex; }
+    </style>
+</head>
+<body class="text-slate-800">
+
+    <div id="app" class="max-w-md mx-auto min-h-screen flex flex-col">
+        
+        <!-- Header -->
+        <header class="p-6 flex justify-between items-center">
+            <div>
+                <h1 class="text-2xl font-bold tracking-tight text-slate-900">NOWログ</h1>
+                <p class="text-[10px] text-slate-400">「今」を刻む、自分を知る。</p>
+            </div>
+            <button onclick="openSettings()" class="p-2 text-slate-400">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.72v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+        </header>
+
+        <!-- Main Content -->
+        <main class="flex-grow px-6 pb-24">
+            
+            <!-- ① Record Screen -->
+            <div id="record-screen" class="tab-content active space-y-8 animate-in fade-in duration-500">
+                <section>
+                    <h2 class="text-sm font-semibold text-slate-400 mb-3 ml-1">🧭 なにしてる？</h2>
+                    <div class="grid grid-cols-2 gap-3">
+                        <button onclick="logAction('作業', '💻')" class="bg-white border border-slate-100 rounded-2xl p-6 shadow-sm active:bg-slate-50 transition-all flex flex-col items-center gap-2">
+                            <span class="text-3xl">💻</span>
+                            <span class="font-bold text-sm">作業</span>
+                        </button>
+                        <button onclick="logAction('休憩', '☕')" class="bg-white border border-slate-100 rounded-2xl p-6 shadow-sm active:bg-slate-50 transition-all flex flex-col items-center gap-2">
+                            <span class="text-3xl">☕</span>
+                            <span class="font-bold text-sm">休憩</span>
+                        </button>
+                        <button onclick="logAction('移動', '🚶')" class="bg-white border border-slate-100 rounded-2xl p-6 shadow-sm active:bg-slate-50 transition-all flex flex-col items-center gap-2">
+                            <span class="text-3xl">🚶</span>
+                            <span class="font-bold text-sm">移動</span>
+                        </button>
+                        <button onclick="logAction('遊び', '🎮')" class="bg-white border border-slate-100 rounded-2xl p-6 shadow-sm active:bg-slate-50 transition-all flex flex-col items-center gap-2">
+                            <span class="text-3xl">🎮</span>
+                            <span class="font-bold text-sm">遊び</span>
+                        </button>
+                    </div>
+                </section>
+
+                <section>
+                    <h2 class="text-sm font-semibold text-slate-400 mb-3 ml-1">🙂 気分は？</h2>
+                    <div class="flex justify-between gap-3">
+                        <button onclick="setMood('良い', '😀')" id="mood-good" class="flex-1 bg-white border border-slate-100 rounded-2xl p-4 shadow-sm active:bg-green-50 transition-all flex flex-col items-center gap-1">
+                            <span class="text-3xl">😀</span>
+                        </button>
+                        <button onclick="setMood('普通', '😐')" id="mood-neutral" class="flex-1 bg-white border border-slate-800 rounded-2xl p-4 shadow-sm active:bg-slate-50 transition-all border-2 flex flex-col items-center gap-1">
+                            <span class="text-3xl">😐</span>
+                        </button>
+                        <button onclick="setMood('しんどい', '😵‍💫')" id="mood-bad" class="flex-1 bg-white border border-slate-100 rounded-2xl p-4 shadow-sm active:bg-red-50 transition-all flex flex-col items-center gap-1">
+                            <span class="text-3xl">😵‍💫</span>
+                        </button>
+                    </div>
+                </section>
+            </div>
+
+            <!-- ② History Screen -->
+            <div id="history-screen" class="tab-content space-y-4">
+                <div id="diary-history" class="mb-6 space-y-2">
+                    <!-- Daily Diary Cards -->
+                </div>
+                <div class="flex justify-between items-center mb-2">
+                    <h2 class="text-lg font-bold">アクション履歴</h2>
+                    <button onclick="clearLogs()" class="text-xs text-red-400">消去</button>
+                </div>
+                <div id="log-list" class="space-y-3"></div>
+            </div>
+
+            <!-- ③ Summary Screen -->
+            <div id="summary-screen" class="tab-content space-y-6">
+                <h2 class="text-lg font-bold mb-4">今日のまとめ</h2>
+                <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm space-y-6">
+                    <div id="action-stats" class="grid grid-cols-2 gap-4"></div>
+                    <hr class="border-slate-50">
+                    <div id="mood-stats" class="space-y-3"></div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Navigation Bar -->
+        <nav class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white/90 backdrop-blur-md border-t border-slate-100 px-6 py-4 flex justify-around items-center">
+            <button onclick="showTab('record')" class="nav-item text-slate-800 flex flex-col items-center gap-1" id="nav-record">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M2 12h20"/></svg>
+                <span class="text-[10px] font-bold">記録</span>
+            </button>
+            <button onclick="showTab('history')" class="nav-item text-slate-300 flex flex-col items-center gap-1" id="nav-history">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="10"/></svg>
+                <span class="text-[10px] font-bold">履歴</span>
+            </button>
+            <button onclick="showTab('summary')" class="nav-item text-slate-300 flex flex-col items-center gap-1" id="nav-summary">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+                <span class="text-[10px] font-bold">まとめ</span>
+            </button>
+        </nav>
+
+        <!-- Feedback Toast -->
+        <div id="feedback" class="fixed bottom-24 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-6 py-3 rounded-full text-sm font-medium opacity-0 transition-opacity pointer-events-none">記録しました</div>
+
+        <!-- 📔 Diary Modal -->
+        <div id="diary-modal" class="diary-modal">
+            <div class="bg-white rounded-[40px] p-8 w-full max-w-xs shadow-2xl animate-in zoom-in-95 duration-300">
+                <div class="text-center mb-6">
+                    <div class="text-4xl mb-4">📔</div>
+                    <h3 class="text-xl font-bold">一日の日記</h3>
+                    <p class="text-slate-400 text-sm">今日全体を振り返ると？</p>
+                </div>
+                <div class="grid grid-cols-1 gap-3">
+                    <button onclick="submitDiary('最高！', '🌟')" class="bg-yellow-50 hover:bg-yellow-100 p-4 rounded-2xl flex items-center justify-between group transition-all">
+                        <span class="text-2xl">🌟</span>
+                        <span class="font-bold text-yellow-700">最高！</span>
+                        <span class="text-yellow-300 opacity-0 group-hover:opacity-100">→</span>
+                    </button>
+                    <button onclick="submitDiary('まあまあ', '🍃')" class="bg-slate-50 hover:bg-slate-100 p-4 rounded-2xl flex items-center justify-between group transition-all">
+                        <span class="text-2xl">🍃</span>
+                        <span class="font-bold text-slate-600">まあまあ</span>
+                        <span class="text-slate-300 opacity-0 group-hover:opacity-100">→</span>
+                    </button>
+                    <button onclick="submitDiary('ぐったり', '💤')" class="bg-blue-50 hover:bg-blue-100 p-4 rounded-2xl flex items-center justify-between group transition-all">
+                        <span class="text-2xl">💤</span>
+                        <span class="font-bold text-blue-700">ぐったり</span>
+                        <span class="text-blue-300 opacity-0 group-hover:opacity-100">→</span>
+                    </button>
+                </div>
+                <button onclick="closeDiary()" class="mt-6 w-full text-slate-300 text-xs font-medium">またあとで</button>
+            </div>
+        </div>
+
+        <!-- ⚙️ Settings Modal -->
+        <div id="settings-modal" class="diary-modal">
+            <div class="bg-white rounded-3xl p-6 w-full max-w-xs shadow-2xl">
+                <h3 class="font-bold mb-4">通知設定</h3>
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm">日記リマインド</span>
+                        <input type="time" id="remind-time" value="21:00" onchange="saveSettings()" class="border rounded px-2 py-1 text-sm">
+                    </div>
+                    <button onclick="requestNotificationPermission()" id="notif-btn" class="w-full bg-slate-900 text-white py-3 rounded-xl text-sm font-bold">通知を有効にする</button>
+                </div>
+                <button onclick="closeSettings()" class="mt-6 w-full text-slate-400 text-xs">閉じる</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let logs = JSON.parse(localStorage.getItem('nowlogs')) || [];
+        let diaries = JSON.parse(localStorage.getItem('nowdiaries')) || {};
+        let currentMood = { label: '普通', icon: '😐' };
+
+        // --- Notification Logic ---
+        function requestNotificationPermission() {
+            Notification.requestPermission().then(permission => {
+                if (permission === 'granted') {
+                    showFeedback("通知をオンにしたよ！");
+                    document.getElementById('notif-btn').innerText = "通知設定済み";
+                    document.getElementById('notif-btn').disabled = true;
+                }
+            });
+        }
+
+        function checkReminders() {
+            const now = new Date();
+            const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+            const settingsTime = localStorage.getItem('remindTime') || "21:00";
+            
+            // 今日の日記がまだで、設定時刻になったら通知
+            const today = now.toDateString();
+            if (timeStr === settingsTime && !diaries[today]) {
+                if (Notification.permission === 'granted') {
+                    new Notification("NOWログ", { body: "そろそろ今日一日を振り返ってみない？" });
+                    openDiary();
+                } else {
+                    openDiary(); // 通知が許可されていなくても画面は出す
+                }
+            }
+        }
+        setInterval(checkReminders, 60000); // 1分ごとにチェック
+
+        // --- Diary Logic ---
+        function openDiary() { document.getElementById('diary-modal').classList.add('active'); }
+        function closeDiary() { document.getElementById('diary-modal').classList.remove('active'); }
+
+        function submitDiary(label, icon) {
+            const today = new Date().toDateString();
+            diaries[today] = { label, icon, timestamp: new Date().toISOString() };
+            localStorage.setItem('nowdiaries', JSON.stringify(diaries));
+            closeDiary();
+            showFeedback(`今日もお疲れ様！${icon}`);
+            if (document.getElementById('history-screen').classList.contains('active')) renderHistory();
+        }
+
+        // --- Core App Logic ---
+        function showTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.getElementById(`${tabId}-screen`).classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.replace('text-slate-800', 'text-slate-300'));
+            document.getElementById(`nav-${tabId}`).classList.replace('text-slate-300', 'text-slate-800');
+            if (tabId === 'history') renderHistory();
+            if (tabId === 'summary') renderSummary();
+        }
+
+        function logAction(name, icon) {
+            const entry = { id: Date.now(), timestamp: new Date().toISOString(), action: name, actionIcon: icon, mood: currentMood.label, moodIcon: currentMood.icon };
+            logs.unshift(entry);
+            localStorage.setItem('nowlogs', JSON.stringify(logs));
+            showFeedback(`${icon} 記録したよ`);
+        }
+
+        function setMood(label, icon) {
+            currentMood = { label, icon };
+            const btns = { '良い': 'mood-good', '普通': 'mood-neutral', 'しんどい': 'mood-bad' };
+            Object.values(btns).forEach(id => document.getElementById(id).classList.remove('border-slate-800', 'border-2'));
+            document.getElementById(btns[label]).classList.add('border-slate-800', 'border-2');
+        }
+
+        function showFeedback(text) {
+            const fb = document.getElementById('feedback');
+            fb.innerText = text;
+            fb.classList.replace('opacity-0', 'opacity-100');
+            setTimeout(() => fb.classList.replace('opacity-100', 'opacity-0'), 1500);
+        }
+
+        function renderHistory() {
+            // Diary Section
+            const diaryContainer = document.getElementById('diary-history');
+            const today = new Date().toDateString();
+            const diaryData = diaries[today];
+            
+            if (diaryData) {
+                diaryContainer.innerHTML = `
+                    <div class="bg-gradient-to-br from-indigo-500 to-purple-600 p-5 rounded-3xl text-white shadow-lg">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <div class="text-[10px] opacity-70 font-bold uppercase tracking-wider">Today's Diary</div>
+                                <div class="text-xl font-bold">${diaryData.label} な一日</div>
+                            </div>
+                            <span class="text-4xl">${diaryData.icon}</span>
+                        </div>
+                    </div>
+                `;
+            } else {
+                diaryContainer.innerHTML = `
+                    <button onclick="openDiary()" class="w-full border-2 border-dashed border-slate-200 p-4 rounded-3xl text-slate-400 text-sm font-bold active:bg-slate-50 transition-colors">
+                        今日の気分を締めくくる 📔
+                    </button>
+                `;
+            }
+
+            // Action List
+            const list = document.getElementById('log-list');
+            if (logs.length === 0) { list.innerHTML = '<p class="text-center text-slate-300 py-10">履歴はまだないよ</p>'; return; }
+            list.innerHTML = logs.map(log => {
+                const date = new Date(log.timestamp);
+                return `
+                    <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <span class="text-2xl">${log.actionIcon}</span>
+                            <div>
+                                <div class="font-bold text-sm">${log.action}</div>
+                                <div class="text-[10px] text-slate-400">${date.getHours()}:${String(date.getMinutes()).padStart(2,'0')}</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-1 bg-slate-50 px-2 py-1 rounded-lg">
+                            <span class="text-sm">${log.moodIcon}</span>
+                            <span class="text-[9px] font-bold text-slate-400 uppercase">${log.mood}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderSummary() {
+            const todayStr = new Date().toDateString();
+            const todayLogs = logs.filter(log => new Date(log.timestamp).toDateString() === todayStr);
+            const actions = { '作業': 0, '休憩': 0, '移動': 0, '遊び': 0 };
+            const moods = { '良い': 0, '普通': 0, 'しんどい': 0 };
+            todayLogs.forEach(log => {
+                if (actions.hasOwnProperty(log.action)) actions[log.action]++;
+                if (moods.hasOwnProperty(log.mood)) moods[log.mood]++;
+            });
+
+            const icons = { '作業': '💻', '休憩': '☕', '移動': '🚶', '遊び': '🎮' };
+            document.getElementById('action-stats').innerHTML = Object.entries(actions).map(([k, v]) => `
+                <div class="bg-slate-50 p-3 rounded-2xl flex flex-col">
+                    <span class="text-xs mb-1">${icons[k]} ${k}</span>
+                    <span class="text-lg font-black">${v}<span class="text-[10px] font-normal ml-1">回</span></span>
+                </div>
+            `).join('');
+
+            const total = todayLogs.length || 1;
+            const colors = { '良い': 'bg-green-400', '普通': 'bg-slate-300', 'しんどい': 'bg-red-400' };
+            document.getElementById('mood-stats').innerHTML = Object.entries(moods).map(([k, v]) => {
+                const p = Math.round((v / total) * 100);
+                return `<div class="space-y-1">
+                    <div class="flex justify-between text-[10px] font-bold text-slate-500"><span>${k}</span><span>${p}%</span></div>
+                    <div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden"><div class="${colors[k]} h-full transition-all duration-1000" style="width:${p}%"></div></div>
+                </div>`;
+            }).join('');
+        }
+
+        function openSettings() { document.getElementById('settings-modal').classList.add('active'); }
+        function closeSettings() { document.getElementById('settings-modal').classList.remove('active'); }
+        function saveSettings() {
+            localStorage.setItem('remindTime', document.getElementById('remind-time').value);
+            showFeedback("設定を保存したよ");
+        }
+        function clearLogs() { if(confirm('全部消しちゃうよ？')) { logs=[]; diaries={}; localStorage.clear(); renderHistory(); } }
+
+        window.onload = () => {
+            if (Notification.permission === 'granted') {
+                document.getElementById('notif-btn').innerText = "通知設定済み";
+                document.getElementById('notif-btn').disabled = true;
+            }
+            document.getElementById('remind-time').value = localStorage.getItem('remindTime') || "21:00";
+            showTab('record');
+        };
+    </script>
+</body>
+</html>
